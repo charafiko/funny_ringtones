@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "358406075161",
+    "firebase_url": "https://funnyringtones-e446f.firebaseio.com",
+    "project_id": "funnyringtones-e446f",
+    "storage_bucket": "funnyringtones-e446f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:358406075161:android:360ca34bad194c6c",
+        "android_client_info": {
+          "package_name": "com.acc.gp.ringtones.funny"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "358406075161-gta0hp3qubnrfar2ihunjc27cb5du58q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.acc.gp.ringtones.funny",
+            "certificate_hash": "2775cb2f3c3793069d1d6a8e2a8bdde8a39cf879"
+          }
+        },
+        {
+          "client_id": "358406075161-5bgt3v8ca5tve7a3iajq947eqhfefom1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvvjfuEAuzgtl4ewlonaPskOhp5AqYRZM"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "358406075161-5bgt3v8ca5tve7a3iajq947eqhfefom1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

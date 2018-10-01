@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">FunnyRingtones</string>
+    <string name="app_name">Funny ringtone</string>
+    <string name="image_description"></string>
+    <string name="error_get_data">Can not get ringtone</string>
 </resources>
