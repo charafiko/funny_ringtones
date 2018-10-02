@@ -24,7 +24,6 @@ public class RingtoneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private ItemClickListener mClickListener;
     private MediaPlayer mediaPlayer;
     private int playbackPosition = 0;
-    private int currentPosition;
 
     public void onItemClickListener(ItemClickListener itemClickListener) {
         this.mClickListener = itemClickListener;
@@ -61,18 +60,10 @@ public class RingtoneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             public void onClick(View view) {
                 if (mediaPlayer == null) {
                     playAudio(ringtone.getRingtoneUrl());
-                    currentPosition = position;
-                    viewHolder.imgPlay.setImageResource(R.mipmap.ic_pause);
+                    viewHolder.imgPlay.setImageResource(R.mipmap.ic_stop);
                 } else {
-                    if(currentPosition == position) {
-                        if (mediaPlayer.isPlaying()) {
-                            pauseMediaPlayer();
-                            viewHolder.imgPlay.setImageResource(R.mipmap.ic_play);
-                        } else {
-                            mediaPlayer.start();
-                            viewHolder.imgPlay.setImageResource(R.mipmap.ic_pause);
-                        }
-                    }
+                   stopMediaPlayer();
+                    viewHolder.imgPlay.setImageResource(R.mipmap.ic_play);
                 }
             }
         });
