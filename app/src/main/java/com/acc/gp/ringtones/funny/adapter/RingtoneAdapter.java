@@ -1,6 +1,7 @@
 package com.acc.gp.ringtones.funny.adapter;
 
 import android.content.Context;
+import android.media.MediaPlayer;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,24 +12,22 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.acc.gp.ringtones.funny.R;
-import com.acc.gp.ringtones.funny.interfaces.ActionClickListener;
 import com.acc.gp.ringtones.funny.interfaces.ItemClickListener;
 import com.acc.gp.ringtones.funny.model.Ringtone;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class RingtoneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private Context mContext;
     private ArrayList<Ringtone> ringtoneList;
     private ItemClickListener mClickListener;
-    private ActionClickListener mActionClickListener;
+    private MediaPlayer mediaPlayer;
+    private int playbackPosition = 0;
+    private int currentPosition;
 
     public void onItemClickListener(ItemClickListener itemClickListener) {
         this.mClickListener = itemClickListener;
-    }
-
-    public void onActionClickListener(ActionClickListener actionClickListener) {
-        this.mActionClickListener = actionClickListener;
     }
 
     public RingtoneAdapter(Context mContext, ArrayList<Ringtone> ringtoneList) {
@@ -45,7 +44,7 @@ public class RingtoneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
         final ViewHolder viewHolder = (ViewHolder) holder;
-        Ringtone ringtone = ringtoneList.get(position);
+        final Ringtone ringtone = ringtoneList.get(position);
 
         viewHolder.tvTitle.setText(ringtone.getName());
         viewHolder.tvDuration.setText(ringtone.getDuration());
@@ -60,7 +59,21 @@ public class RingtoneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         viewHolder.imgPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mActionClickListener.onActionClick(position, viewHolder.imgPlay);
+                if (mediaPlayer == null) {
+                    playAudio(ringtone.getRingtoneUrl());
+                    currentPosition = position;
+                    viewHolder.imgPlay.setImageResource(R.mipmap.ic_pause);
+                } else {
+                    if(currentPosition == position) {
+                        if (mediaPlayer.isPlaying()) {
+                            pauseMediaPlayer();
+                            viewHolder.imgPlay.setImageResource(R.mipmap.ic_play);
+                        } else {
+                            mediaPlayer.start();
+                            viewHolder.imgPlay.setImageResource(R.mipmap.ic_pause);
+                        }
+                    }
+                }
             }
         });
 
@@ -87,6 +100,50 @@ public class RingtoneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             tvTitle = itemView.findViewById(R.id.tvTitle);
             tvDuration = itemView.findViewById(R.id.tvDuration);
             progressBar = itemView.findViewById(R.id.progressBar);
+        }
+    }
+
+    private void playAudio(String url) {
+        killMediaPlayer();
+        mediaPlayer = new MediaPlayer();
+        try {
+            mediaPlayer.setDataSource(url);
+            mediaPlayer.prepare();
+            mediaPlayer.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void killMediaPlayer() {
+        if (mediaPlayer != null) {
+            try {
+                mediaPlayer.release();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void pauseMediaPlayer() {
+        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+            playbackPosition = mediaPlayer.getCurrentPosition();
+            mediaPlayer.pause();
+        }
+    }
+
+    private void stopMediaPlayer() {
+        if (mediaPlayer != null) {
+            mediaPlayer.stop();
+            playbackPosition = 0;
+        }
+    }
+
+    private void restartMediaPlayer() {
+        if (mediaPlayer != null && !mediaPlayer.isPlaying()) {
+            mediaPlayer.seekTo(playbackPosition);
+            mediaPlayer.start();
         }
     }
 }

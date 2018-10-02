@@ -3,7 +3,6 @@ package com.acc.gp.ringtones.funny.activity;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -14,7 +13,6 @@ import android.widget.Toast;
 
 import com.acc.gp.ringtones.funny.R;
 import com.acc.gp.ringtones.funny.adapter.RingtoneAdapter;
-import com.acc.gp.ringtones.funny.interfaces.ActionClickListener;
 import com.acc.gp.ringtones.funny.interfaces.ItemClickListener;
 import com.acc.gp.ringtones.funny.model.Ringtone;
 import com.acc.gp.ringtones.funny.utils.Const;
@@ -166,12 +164,6 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
 
-                    ringtoneAdapter.onActionClickListener(new ActionClickListener() {
-                        @Override
-                        public void onActionClick(int position, ImageView actionView) {
-                            actionView.setImageResource(R.mipmap.ic_pause);
-                        }
-                    });
                 } else {
                     Toast.makeText(MainActivity.this, getResources().getString(R.string.error_get_data), Toast.LENGTH_SHORT).show();
 //                    Crashlytics.log("Can not get data, " + task.getException());
