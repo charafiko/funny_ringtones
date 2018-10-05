@@ -1,8 +1,14 @@
 package com.acc.gp.ringtones.funny.adapter;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +30,7 @@ public class RingtoneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private ItemClickListener mClickListener;
     private MediaPlayer mediaPlayer;
     private int playbackPosition = 0;
+    private int oldPosition;
 
     public void onItemClickListener(ItemClickListener itemClickListener) {
         this.mClickListener = itemClickListener;
@@ -58,13 +65,40 @@ public class RingtoneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         viewHolder.imgPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mediaPlayer == null) {
-                    playAudio(ringtone.getRingtoneUrl());
-                    viewHolder.imgPlay.setImageResource(R.mipmap.ic_stop);
-                } else {
-                   stopMediaPlayer();
-                    viewHolder.imgPlay.setImageResource(R.mipmap.ic_play);
+                if (mediaPlayer != null && oldPosition != position) {
+                    killMediaPlayer();
+                    mediaPlayer = null;
+                    playbackPosition = 0;
                 }
+                if (mediaPlayer == null) {
+                    oldPosition = position;
+                    playAudio(ringtone.getRingtoneUrl(), viewHolder.imgPlay, viewHolder.circularProgressBar);
+                    viewHolder.imgPlay.setImageResource(R.mipmap.ic_pause);
+                } else {
+                    if (mediaPlayer.isPlaying()) {
+                        mediaPlayer.pause();
+                        viewHolder.imgPlay.setImageResource(R.mipmap.ic_play);
+                    } else {
+                        mediaPlayer.start();
+                        viewHolder.imgPlay.setImageResource(R.mipmap.ic_pause);
+                    }
+                }
+//                if (!playPause) {
+//
+//                    if (initialStage) {
+//                        new Player().execute(ringtone.getRingtoneUrl());
+//                    } else {
+//                        if (!mediaPlayer.isPlaying()) mediaPlayer.start();
+//                    }
+//
+//                    playPause = true;
+//                } else {
+//                    if (mediaPlayer.isPlaying()) {
+//                        mediaPlayer.pause();
+//                    }
+//
+//                    playPause = false;
+//                }
             }
         });
 
@@ -82,7 +116,7 @@ public class RingtoneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         ImageView imgPlay;
         TextView tvTitle;
         TextView tvDuration;
-        ProgressBar progressBar;
+        ProgressBar circularProgressBar;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -90,17 +124,104 @@ public class RingtoneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             imgPlay = itemView.findViewById(R.id.imgPlay);
             tvTitle = itemView.findViewById(R.id.tvTitle);
             tvDuration = itemView.findViewById(R.id.tvDuration);
-            progressBar = itemView.findViewById(R.id.progressBar);
+            circularProgressBar = itemView.findViewById(R.id.circularProgressBar);
         }
     }
 
-    private void playAudio(String url) {
+    private boolean initialStage = true;
+    private boolean playPause;
+    private ProgressDialog progressDialog;
+
+    class Player extends AsyncTask<String, Void, Boolean> {
+        @Override
+        protected Boolean doInBackground(String... strings) {
+            Boolean prepared = false;
+
+            try {
+                mediaPlayer.setDataSource(strings[0]);
+                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mediaPlayer) {
+                        initialStage = true;
+                        playPause = false;
+                        mediaPlayer.stop();
+                        mediaPlayer.reset();
+                    }
+                });
+
+                mediaPlayer.prepareAsync();
+                prepared = true;
+            } catch (Exception e) {
+                Log.e("MyAudioStreamingApp", e.getMessage());
+                prepared = false;
+            }
+
+            return prepared;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            super.onPostExecute(aBoolean);
+
+            if (progressDialog.isShowing()) {
+                progressDialog.cancel();
+            }
+
+            mediaPlayer.start();
+            initialStage = false;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mediaPlayer = new MediaPlayer();
+            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            progressDialog = new ProgressDialog(mContext);
+            progressDialog.setMessage("Buffering...");
+            progressDialog.show();
+        }
+    }
+
+    private void playAudio(String url, final ImageView imgPlay, final ProgressBar circularProgressBar) {
         killMediaPlayer();
         mediaPlayer = new MediaPlayer();
         try {
+            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             mediaPlayer.setDataSource(url);
-            mediaPlayer.prepare();
-            mediaPlayer.start();
+            mediaPlayer.prepareAsync();
+            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+
+                @Override
+                public void onPrepared(MediaPlayer player) {
+                    player.start();
+                }
+
+            });
+
+            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mediaPlayer) {
+                    initialStage = true;
+                    playPause = false;
+                    imgPlay.setImageResource(R.mipmap.ic_play);
+                    mediaPlayer.stop();
+                    mediaPlayer.reset();
+                }
+            });
+
+
+            final Handler mHandler = new Handler();
+            ((Activity) mContext).runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    if (mediaPlayer != null) {
+                        int mCurrentPosition = mediaPlayer.getCurrentPosition() / 1000;
+                        circularProgressBar.setProgress(mCurrentPosition);
+                    }
+                    mHandler.postDelayed(this, 1000);
+                }
+            });
         } catch (IOException e) {
             e.printStackTrace();
         }
